@@ -46,9 +46,10 @@ Concretely, our main contributions are summarized as follows:
 * We also discuss the impacts as wel as the limitations of prevalent pre-train schemes and model scaling strategies for Transformer in vision through transferring to object detection.
 
 ### Results
+**TL;DR:**  The results trained for PASCAL VOC 2012 with proper training params could achieve the **miou 0.634** on Pascal VOC 2012 `Eval Set`.
 
-| Backbone  | ResizeLong | Crop | ResizeCropped | ColorJitter | RandomAug | Cutout | Pad0 | Batchsize | LR       | Decay | Freeze-1 | Freeze01 | 10xLr LastStage | SyncBn | GPUNum | Optim | mIOU   |
-| --------- | ---------- | ---- | ------------- | ----------- | --------- | ------ | ---- | --------- | -------- | ----- | -------- | -------- | --------------- | ------ | ------ | ----- | ------ |
+| Backbone  | Resize<br>Long | Crop | Resize<br>Cropped | Color<br>Jitter | Random<br>Aug | Cutout | Pad0 | Batchsize | LR       | Decay | Freeze-1 | Freeze01 | 10xLr<br>LastStage | SyncBn | GPUNum | Optim | mIOU   |
+| :---------: | :----------: | :----: | :-------------: | :-----------: | :---------: | :------: | :----: | :---------: | :--------: | :-----: | :--------: | :--------: | :---------------: | :------: | :------: | :-----: | :------: |
 | ResNet101 | ❌        | 321  | ❌           | ❌         | ❌       | ❌    | ❌  | 16        | 5.00E-04 | 3     | ❌      | ❌      | ✅             | ❌    | 1      | Step  | 0.615  |
 | HRNetw48  | ❌        | 321  | ❌           | ❌         | ❌       | ❌    | ❌  | 16        | 5.00E-04 | 3     | ❌      | ❌      | ❌             | ❌    | 1      | Step  | 0.6239 |
 | HRNetw48  | ❌        | 422  | 321           | ❌         | ❌       | ❌    | ❌  | 16        | 5.00E-04 | 3     | ❌      | ❌      | ❌             | ❌    | 1      | Step  | 0.6296 |
@@ -69,11 +70,43 @@ Concretely, our main contributions are summarized as follows:
 | HRNetw48  | [320, 640] | 512  | ❌           | ✅         | ❌       | ❌    | ❌  | 12        | 2.50E-04 | 3     | ✅      | ❌      | ✅             | ✅    | 2      | Step  | 0.6312 |
 | HRNetw48  | [320, 640] | 512  | ❌           | ✅         | ❌       | ❌    | ❌  | 12        | 2.50E-04 | 3     | ✅      | ❌      | ✅             | ✅    | 2      | Poly  | 0.6296 |
 
-**Notes**: 
+**Additional**: 
 
-- The access code for `Baidu Drive` is `yolo`. 
-- The `FB` stands for model weights provided by DeiT ([paper](https://arxiv.org/abs/2012.12877), [code](https://github.com/facebookresearch/deit)). Thanks for their wonderful works.
-- We will update other models in the future, please stay tuned :) 
+- Different from the implement in the origin paper, we would like to discover more posibility, so we list the **DGCN** methods trained with both `PASCAL VOC 2012` and `DUTS` salient dataset and call it `Salient-Guide-DGCN`
+
+| Backbone | TrainDataset | ResizeLong | BatchSize | Crop | ColorJitter | LR       | Optim | mIOU   |
+| :--------: | :------------: | :----------: | :---------: | :----: | :-----------: | :--------: | :-----: | :------: |
+| HRNetw48 | Pascal+DUTS  | [320, 640] | 3         | 512  | ✅         | 1.50E-04 | Step  | 0.6637 |
+
+- And we do the retrain proces on the `PASCAL VOC 2012` & `DUTS` both trained result.
+
+| Model     | mIOU   |
+| :---------: | :------: |
+| DeepLabV2 | 0.6747 |
+| DeepLabV3 | 0.6931 |
+
+- Here is the **Result Comparation**:
+
+| Method                         | TrainDataset | Result on Eval | Result on Test |
+| :------------------------------: | :------------: | :--------------: | :--------------: |
+| FCN                            | 9K           | -              | 62.20%         |
+| DeepLab                        | 10K          | 67.60%         | 70.30%         |
+| BoxSup                         | 10k          | 62.00%         | 64.60%         |
+| ScribbleSup                    | 10K          | 63.10%         | -              |
+| SEC                            | 10K          | 50.70%         | 51.10%         |
+| DSRG                           | 10K          | 61.40%         | 63.20%         |
+| DGCN                           | 10K          | 60.80%         | -              |
+| DGCN-retrain                   | 10K          | 64.00%         | 64.60%         |
+| RRM                            | 10K          | 66.30%         | 66.60%         |
+| LIID                           | 10K          | 66.50%         | 67.50%         |
+| <i>LIID<sup>†<sup>             | 10K          | 69.40%         | 70.40%         |
+| DRS                            | 10K          | 62.90%         | -              |
+| PuzzleCAM                      | 10K          | 64.70%         | -              |
+| <i>PuzzleCAM<sup>†<sup>        | 10K          | 74.10%         | 74.60%         |
+| <b>Ours:                          |              |                |                |
+| <b>DGCN[hrnet]                    | 10K+DUTS     | 66.40%         | -              |
+| <b>DGCN[hrnet]-<br>retrain[DeeplabV2] | 10K          | 67.50%         | -              |
+| <b>DGCN[hrnet]-<br>retrain[DeeplabV3] | 10K          | 69.31%         | -              |
 
 ### Requirement
 This codebase has been developed with python version 3.6, PyTorch 1.5+ and torchvision 0.6+:
