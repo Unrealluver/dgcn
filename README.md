@@ -8,13 +8,12 @@ task, and achieved SOTA performence at that time.
 
 :man_technologist: This project is under active development :woman_technologist: :
 
-++++++++++tobeupdate
-* **`Jun 22, 2021`:**  We update our [manuscript](https://arxiv.org/pdf/2106.00666.pdf) on arXiv including discussion about position embeddings and more visualizations, check it out!
 
-* **`Jun 9, 2021`:**  We add a [notebook](VisualizeAttention.ipynb) to to visualize self-attention maps of `[Det]` tokens on different heads of the last layer, check it out!
+* **`Jun 29, 2021`:**  We release [this](https://github.com/Unrealluver/dgcn) repo that contains more results, check it out!
+
+* **`Jan 26, 2021`:**  We firstly release our [DGCN](https://github.com/hustvl/DGCN) repo, check it out!
 
 #
-++++++++++++
 
 > [**Deep Graph Cut Network for Weakly-supervised Semantic Segmentation**](http://xinggangw.info/pubs/scis-dgcn.pdf)
 >
@@ -47,13 +46,28 @@ Concretely, our main contributions are summarized as follows:
 * We also discuss the impacts as wel as the limitations of prevalent pre-train schemes and model scaling strategies for Transformer in vision through transferring to object detection.
 
 ### Results
-|Model |Pre-train Epochs |  ViT (DeiT) Weight / Log| Fine-tune Epochs | Eval Size | YOLOS Checkpoint / Log | AP @ COCO val |
-| :------------: | :------------: | :------------: | :------------: | :------------: | :------------: | :------------: |
-|`YOLOS-Ti`|300|[FB](https://dl.fbaipublicfiles.com/deit/deit_tiny_patch16_224-a1311bcf.pth)|300|512|[Baidu Drive](https://pan.baidu.com/s/17kn_UX1LhsjRWxeWEwgWIw), [Google Drive](https://drive.google.com/file/d/1P2YbnAIsEOOheAPr3FGkAAD7pPuN-2Mn/view?usp=sharing) / [Log](https://gist.github.com/Yuxin-CV/aaf4f835f5fdba4b58217f0e3131e9da)|28.7
-|`YOLOS-S`|200|[Baidu Drive](https://pan.baidu.com/s/1LsxtuxSGGj5szZssoyzr_Q), [Google Drive](https://drive.google.com/file/d/1waIu4QODBu79JuIwMvchpezrP4nd3NQr/view?usp=sharing) / [Log](https://gist.github.com/Yuxin-CV/98168420dbcc5a0d1e656da83c6bf416)|150|800|[Baidu Drive](https://pan.baidu.com/s/1m39EKyO_7RdIYjDY4Ew_lw), [Google Drive](https://drive.google.com/file/d/1kfHJnC29MqEaizR-d57tzpAxQVhoYRlh/view?usp=sharing) / [Log](https://gist.github.com/Yuxin-CV/ab06dd0d5034e501318de2e9aba9a6fb)|36.1
-|`YOLOS-S`|300|[FB](https://dl.fbaipublicfiles.com/deit/deit_small_patch16_224-cd65a155.pth)|150|800|[Baidu Drive](https://pan.baidu.com/s/12v6X-r4XhV5nEXF6yNfGRg), [Google Drive](https://drive.google.com/file/d/1GUB16Zt1BUsT-LeHa8oHTE2CwL7E92VY/view?usp=sharing) / [Log](https://gist.github.com/Yuxin-CV/42d733e478c76f686f2b52cf50dfe59d)|36.1
-|`YOLOS-S (dWr)`|300|[Baidu Drive](https://pan.baidu.com/s/1XVfWJk5BFnxIQ3LQeAQypw), [Google Drive](https://drive.google.com/file/d/1uucdzz65lnv-vGFQunTgYSWl7ayJIDgn/view?usp=sharing) / [Log](https://gist.github.com/Yuxin-CV/e3beedccff156b0065f2eb559a4818d3)|150|800|[Baidu Drive](https://pan.baidu.com/s/1Xk2KbFadSwCOjo7gcoSG0w), [Google Drive](https://drive.google.com/file/d/1vBJVXqazsOoHHMZ6Vg6-MpAkYWstLczQ/view?usp=sharing) / [Log](https://gist.github.com/Yuxin-CV/043ea5d27883a6ff1f105ad5d9ddaa46) |37.6
-|`YOLOS-B`|1000|[FB](https://dl.fbaipublicfiles.com/deit/deit_base_distilled_patch16_384-d0272ac0.pth)|150|800|[Baidu Drive](https://pan.baidu.com/s/1IKGoAlwcdoV25cU5Cs-kew), [Google Drive](https://drive.google.com/file/d/1AUCedyYT2kxgHJNi3UA23P2UNTreGj3_/view?usp=sharing) / [Log](https://gist.github.com/Yuxin-CV/d5f7720a5868563619ddd64d61760e2f)|42.0
+
+| Backbone  | ResizeLong | Crop | ResizeCropped | ColorJitter | RandomAug | Cutout | Pad0 | Batchsize | LR       | Decay | Freeze-1 | Freeze01 | 10xLr LastStage | SyncBn | GPUNum | Optim | mIOU   |
+| --------- | ---------- | ---- | ------------- | ----------- | --------- | ------ | ---- | --------- | -------- | ----- | -------- | -------- | --------------- | ------ | ------ | ----- | ------ |
+| ResNet101 | ❌        | 321  | ❌           | ❌         | ❌       | ❌    | ❌  | 16        | 5.00E-04 | 3     | ❌      | ❌      | ✅             | ❌    | 1      | Step  | 0.615  |
+| HRNetw48  | ❌        | 321  | ❌           | ❌         | ❌       | ❌    | ❌  | 16        | 5.00E-04 | 3     | ❌      | ❌      | ❌             | ❌    | 1      | Step  | 0.6239 |
+| HRNetw48  | ❌        | 422  | 321           | ❌         | ❌       | ❌    | ❌  | 16        | 5.00E-04 | 3     | ❌      | ❌      | ❌             | ❌    | 1      | Step  | 0.6296 |
+| HRNetw48  | [320, 640] | 512  | ❌           | ❌         | ❌       | ❌    | ❌  | 8         | 5.00E-04 | 3     | ❌      | ❌      | ❌             | ❌    | 2      | Step  | 0.6173 |
+| HRNetw48  | [320, 640] | 512  | ❌           | ✅         | ❌       | ❌    | ❌  | 8         | 5.00E-04 | 3     | ❌      | ❌      | ❌             | ❌    | 2      | Step  | 0.6312 |
+| HRNetw48  | [320, 640] | 512  | ❌           | ✅         | ❌       | ❌    | ❌  | 12        | 5.00E-04 | 3     | ❌      | ❌      | ❌             | ❌    | 2      | Step  | 0.6257 |
+| HRNetw48  | [320, 640] | 512  | ❌           | ✅         | ❌       | ❌    | ❌  | 24        | 5.00E-04 | 3     | ❌      | ❌      | ✅             | ✅    | 4      | Step  | 0.6328 |
+| HRNetw48  | [320, 640] | 512  | ❌           | ✅         | ✅       | ✅    | ❌  | 24        | 5.00E-04 | 3     | ❌      | ❌      | ✅             | ✅    | 4      | Step  | 0.6241 |
+| HRNetw48  | [320, 640] | 512  | ❌           | ✅         | ✅       | ✅    | ❌  | 6         | 5.00E-04 | 3     | ❌      | ❌      | ✅             | ❌    | 1      | Step  | 0.6164 |
+| HRNetw48  | [320, 640] | 512  | ❌           | ✅         | ❌       | ✅    | ❌  | 12        | 5.00E-04 | 6     | ❌      | ❌      | ✅             | ✅    | 2      | Step  | 0.6183 |
+| HRNetw48  | [320, 640] | 512  | ❌           | ✅         | ❌       | ✅    | ❌  | 12        | 1.00E-03 | 3     | ❌      | ❌      | ✅             | ✅    | 2      | Step  | 0.6121 |
+| HRNetw48  | [320, 640] | 512  | ❌           | ✅         | ❌       | ✅    | ❌  | 12        | 7.50E-04 | 3     | ❌      | ❌      | ✅             | ✅    | 2      | Step  | 0.6204 |
+| HRNetw48  | [320, 640] | 512  | ❌           | ✅         | ❌       | ❌    | ❌  | 12        | 2.50E-04 | 3     | ❌      | ❌      | ✅             | ✅    | 2      | Step  | 0.6343 |
+| HRNetw48  | [320, 640] | 512  | ❌           | ✅         | ❌       | ❌    | ❌  | 12        | 2.50E-04 | 3     | ❌      | ✅      | ✅             | ✅    | 2      | Step  | 0.6315 |
+| HRNetw48  | [320, 640] | 512  | ❌           | ✅         | ✅       | ❌    | ❌  | 12        | 2.50E-04 | 3     | ❌      | ✅      | ✅             | ✅    | 2      | Poly  | 0.6321 |
+| HRNetw48  | [320, 640] | 512  | ❌           | ✅         | ❌       | ❌    | ✅  | 12        | 2.50E-04 | 3     | ❌      | ✅      | ✅             | ✅    | 2      | Step  | 0.6327 |
+| HRNetw48  | [320, 640] | 512  | ❌           | ✅         | ❌       | ❌    | ✅  | 12        | 2.50E-04 | 3     | ❌      | ✅      | ✅             | ✅    | 2      | Poly  | 0.6348 |
+| HRNetw48  | [320, 640] | 512  | ❌           | ✅         | ❌       | ❌    | ❌  | 12        | 2.50E-04 | 3     | ✅      | ❌      | ✅             | ✅    | 2      | Step  | 0.6312 |
+| HRNetw48  | [320, 640] | 512  | ❌           | ✅         | ❌       | ❌    | ❌  | 12        | 2.50E-04 | 3     | ✅      | ❌      | ✅             | ✅    | 2      | Poly  | 0.6296 |
 
 **Notes**: 
 
