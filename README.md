@@ -17,7 +17,7 @@ task, and achieved SOTA performence at that time.
 
 > [**Deep Graph Cut Network for Weakly-supervised Semantic Segmentation**](http://xinggangw.info/pubs/scis-dgcn.pdf)
 >
-> by [Jiapei Feng] \*, [Xinggang Wang](https://xinggangw.info/)<sup>* </sup>,  [Wenyu Liu](http://eic.hust.edu.cn/professor/liuwenyu/).
+> by Jiapei Feng \*, [Xinggang Wang](https://xinggangw.info/)<sup>* </sup>,  [Wenyu Liu](http://eic.hust.edu.cn/professor/liuwenyu/).
 > 
 > <sup>1</sup> [School of EIC, HUST](http://eic.hust.edu.cn/English/Home.htm), <sup>2</sup> Institute of AI, HUST, <sup>3</sup> [Horizon Robotics](https://en.horizon.ai).
 > 
