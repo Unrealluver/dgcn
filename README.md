@@ -43,7 +43,7 @@ The main contributions of this paper can be summarized as follows:
 * We build the connections between **weakly-supervised** semantic segmentation and **semi-supervised** learning. Besides of the instantiation of the deep graph cut algorithm, more semi-supervised learning methods can be applied to solve this problem.
 
 ### Results
-**TL;DR:**  The results trained for PASCAL VOC 2012 with proper training params could achieve the **miou 0.634** on Pascal VOC 2012 `Eval Set`.
+**TL;DR:**  The results trained for PASCAL VOC 2012 with proper training params could achieve the **miou 0.634** on Pascal VOC 2012 `Eval Set`. After retrain step, it will get a higher result.
 
 | Backbone  | Resize<br>Long | Crop | Resize<br>Cropped | Color<br>Jitter | Random<br>Aug | Cutout | Pad0 | Batchsize | LR       | Decay | Freeze-1 | Freeze01 | 10xLr<br>LastStage | SyncBn | GPUNum | Optim | mIOU   |
 | :---------: | :----------: | :----: | :-------------: | :-----------: | :---------: | :------: | :----: | :---------: | :--------: | :-----: | :--------: | :--------: | :---------------: | :------: | :------: | :-----: | :------: |
@@ -152,6 +152,7 @@ DUTS/
 
 python3.7 run_sample.py \
     --voc12_data_dir /data/zhulianghui/data/VOC2012/VOCdevkit/VOC2012/ \
+    --model models.seg_resnet101 \
     --batch_size=8 \
     --train_dgcn_pass=True \
     --make_pred_pass=False \
@@ -172,6 +173,7 @@ python3.7  -m torch.distributed.launch \
     --nproc_per_node=2 \
     run_sample.py \
     --voc12_data_dir /data/zhulianghui/data/VOC2012/VOCdevkit/VOC2012/ \
+    --model models.seg_resnet101 \
     --batch_size=8 \
     --train_dgcn_pass=True \
     --make_pred_pass=False \
@@ -183,24 +185,6 @@ python3.7  -m torch.distributed.launch \
 
 </details>
 
-<details>
-<summary>To train the <code>dgcn-wider-resnet</code> model in the paper, run this command:</summary>
-<pre><code>
-
-python3.7  -m torch.distributed.launch \
-    --nproc_per_node=2 \
-    run_sample.py \
-    --voc12_data_dir /data/zhulianghui/data/VOC2012/VOCdevkit/VOC2012/ \
-    --batch_size=8 \
-    --train_dgcn_pass=True \
-    --make_pred_pass=False \
-    --eval_pred_pass=False \
-    --name=dgcn \
-    --random_seed=504 
-
-</code></pre>
-
-</details>
 
 <details>
 <summary>To train the <code>dgcn-hrnet</code> model in the paper, run this command:</summary>
@@ -210,6 +194,7 @@ python3.7  -m torch.distributed.launch \
     --nproc_per_node=2 \
     run_sample.py \
     --voc12_data_dir /data/zhulianghui/data/VOC2012/VOCdevkit/VOC2012/ \
+    --model models.seg_hrnet \
     --batch_size=8 \
     --train_dgcn_pass=True \
     --make_pred_pass=False \
@@ -255,7 +240,7 @@ python3.7 run_sample.py --voc12_data_dir /data/zhulianghui/data/VOC2012/VOCdevki
 
 * **Some GIF result presentation:**
 
-![gif result](./docs/result_gif.gif))
+![gif result](./docs/result_gif.gif)
 
 
 ## Acknowledgement :heart:

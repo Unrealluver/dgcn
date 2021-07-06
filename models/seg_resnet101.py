@@ -1,10 +1,13 @@
 import torch.nn as nn
 import math
 import torch.utils.model_zoo as model_zoo
+from torch.utils.model_zoo import load_url as load_state_dict_from_url
 import torch
 import numpy as np
 import sys
 import torchvision
+import warnings
+warnings.filterwarnings("ignore")
 
 affine_par = True
 # sys.path.append('/workspace2/fengjp/Synchronized-BatchNorm-PyTorch/')
@@ -191,10 +194,58 @@ class ResNet(nn.Module):
         feature5 = x
         x = self.layer5(x)
 
-        if self.training:
+        if not self.training:
             return x
 
-        return feature2, feature4, x
+        x0_h, x0_w = feature4.shape[2], feature4.shape[3]
+        feature2_ = torch.nn.functional.interpolate(feature2, size=[x0_h, x0_w], mode='bilinear',
+                                                    align_corners=True)
+        feature4_ = torch.nn.functional.interpolate(feature4, size=[x0_h, x0_w], mode='bilinear',
+                                                    align_corners=True)
+        feature = torch.cat((feature2_, feature4_), 1)
+
+        return feature, x
+
+
+    def get_0x_lr_params(self):
+        b = []
+
+        b.append(self.conv1)
+        b.append(self.bn1)
+        b.append(self.layer1)
+        b.append(self.layer2)
+
+        for i in range(len(b)):
+            for j in b[i].modules():
+                jj = 0
+                for k in j.parameters():
+                    jj += 1
+                    if k.requires_grad:
+                        yield k
+
+    def get_1x_lr_params(self):
+        b = []
+
+        b.append(self.layer3)
+        b.append(self.layer4)
+
+        for i in range(len(b)):
+            for j in b[i].modules():
+                jj = 0
+                for k in j.parameters():
+                    jj += 1
+                    if k.requires_grad:
+                        yield k
+
+
+    def get_10x_lr_params(self):
+        b = []
+
+        b.append(self.layer5.parameters())
+
+        for j in range(len(b)):
+            for i in b[j]:
+                yield i
 
 class MS_Deeplab(nn.Module):
     def __init__(self,block,num_classes):
@@ -221,6 +272,12 @@ class MS_Deeplab(nn.Module):
 
 def Res_Ms_Deeplab(num_classes=21):
     model = MS_Deeplab(Bottleneck, num_classes)
+    return model
+
+def get_seg_model(cfg):
+    model = Res_Deeplab(21)
+    state_dict = load_state_dict_from_url('https://download.pytorch.org/models/resnet101-5d3b4d8f.pth')
+    model.load_state_dict(state_dict, strict=False)
     return model
 
 def Res_Deeplab(num_classes=21):

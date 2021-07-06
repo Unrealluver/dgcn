@@ -35,7 +35,7 @@ if __name__ == "__main__":
                         help="Number of classes to predict (including background).")
 
     # training params
-    parser.add_argument("--batch_size", type=int, default=12,
+    parser.add_argument("--batch_size", type=int, default=8,
                         help="Number of images sent to the network in one step.")
     parser.add_argument("--epoch", type=int, default=1,
                         help="Training epoch.")
@@ -59,7 +59,7 @@ if __name__ == "__main__":
                         help="decide to use which optimizer.")
 
     # model
-    parser.add_argument("--model", type=str, default="models.seg_hrnet",
+    parser.add_argument("--model", type=str, default="models.seg_resnet101",
                         help="decide which backbone.")
     parser.add_argument("--restore_from", type=str, default=None,
                         help="Where restore model parameters from.")
@@ -87,7 +87,7 @@ if __name__ == "__main__":
                         help="If you want to eval image with crf post-process.")
 
     # Step
-    parser.add_argument("--train_dgcn_pass", default=False, type=str2bool)
+    parser.add_argument("--train_dgcn_pass", default=True, type=str2bool)
     parser.add_argument("--make_pred_pass", default=True, type=str2bool)
     parser.add_argument("--eval_pred_pass", default=True, type=str2bool)
 
