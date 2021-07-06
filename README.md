@@ -34,16 +34,13 @@ task, and achieved SOTA performence at that time.
 
 ### Highlights
 
-Directly inherited from [ViT](https://arxiv.org/abs/2010.11929) ([DeiT](https://arxiv.org/abs/2012.12877)), YOLOS is not designed to be yet another high-performance object detector, but to unveil the versatility and transferability of Transformer from image recognition to object detection.
-Concretely, our main contributions are summarized as follows:
+The main contributions of this paper can be summarized as follows: 
 
-* We use the mid-sized `ImageNet-1k` as the sole pre-training dataset, and show that a vanilla [ViT](https://arxiv.org/abs/2010.11929) ([DeiT](https://arxiv.org/abs/2012.12877)) can be successfully transferred to perform the challenging object detection task and produce competitive `COCO` results with the fewest possible modifications, _i.e._, by only looking at one sequence (YOLOS).
+* We propose a **graph cut** neural network, which enables the network accurately generates new pixel-level labels for weakly-supervised semantic segmentation.
 
-* We demonstrate that 2D object detection can be accomplished in a pure sequence-to-sequence manner by taking a sequence of fixed-sized non-overlapping image patches as input. Among existing object detectors, YOLOS utilizes minimal 2D inductive biases. Moreover, it is feasible for YOLOS to perform object detection in any dimensional space unaware the exact spatial structure or geometry.
+* The deep **graph cut** network obtains strong weakly-supervised semantic segmentation performance on the `PASCAL VOC` and `COCO` segmentation benchmarks, which demonstrates the effectiveness of the proposed **deep graph cut module** for generating supervisions.
 
-* For [ViT](https://arxiv.org/abs/2010.11929) ([DeiT](https://arxiv.org/abs/2012.12877)), we find the object detection results are quite sensitive to the pre-train scheme and the detection performance is far from saturating. Therefore the proposed YOLOS can be used as a challenging benchmark task to evaluate different pre-training strategies for [ViT](https://arxiv.org/abs/2010.11929) ([DeiT](https://arxiv.org/abs/2012.12877)).
-
-* We also discuss the impacts as wel as the limitations of prevalent pre-train schemes and model scaling strategies for Transformer in vision through transferring to object detection.
+* We build the connections between **weakly-supervised** semantic segmentation and **semi-supervised** learning. Besides of the instantiation of the deep graph cut algorithm, more semi-supervised learning methods can be applied to solve this problem.
 
 ### Results
 **TL;DR:**  The results trained for PASCAL VOC 2012 with proper training params could achieve the **miou 0.634** on Pascal VOC 2012 `Eval Set`.
@@ -109,173 +106,160 @@ Concretely, our main contributions are summarized as follows:
 | <b>DGCN[hrnet]-<br>retrain[DeeplabV3] | 10K          | 69.31%         | -              |
 
 ### Requirement
-This codebase has been developed with python version 3.6, PyTorch 1.5+ and torchvision 0.6+:
+This codebase has been developed with python version 3.7.6, PyTorch 1.2+ and torchvision 0.4+:
 ```setup
 conda install -c pytorch pytorch torchvision
 ```
-Install pycocotools (for evaluation on COCO) and scipy (for training):
+Install py-maxflow (for graphcut algorithm running) and pydensecrf (also for training process and eval):
 ```setup
-conda install cython scipy
-pip install -U 'git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI'
+pip install PyMaxflow
+pip install git+https://github.com/lucasb-eyer/pydensecrf.git
 ```
 
 ### Data preparation
-Download and extract COCO 2017 train and val images with annotations from http://cocodataset.org. We expect the directory structure to be the following:
-```
-path/to/coco/
-  annotations/  # annotation json files
-  train2017/    # train images
-  val2017/      # val images
-```
+Download and PASCAL VOC 2012 dataset and DUTS dataset. 
+
+* [Download PASCAL VOC 2012](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/#devkit)
+  
+* you can obtain `SegmentationClassAug/` [[link]](https://drive.google.com/drive/folders/1_ik8n5Q4C77X-aIfKiqidFEDQ6zY9JNM?usp=sharing) (augmented with SBD dataset).
+
+* Download [DUTS TRAIN](http://saliencydetection.net/duts/download/DUTS-TR.zip) and [DUTS_TEST](http://saliencydetection.net/duts/download/DUTS-TE.zip)
+
+You could refer the directory structure to be the following:
+
+~~~
+# dataset structure
+VOC2012/
+    --- Annotations/
+    --- ImageSets/
+    --- JPEGImages/
+    --- SegmentationClassAug/
+DUTS/
+    --- DUTS-TE
+        --- DUTS-TE-Image
+        --- DUTS-TE-Mask
+    --- DUTS-TR
+        --- DUTS-TR-Image
+        --- DUTS-TR-Mask
+ ~~~
+
 ### Training
-Before finetuning on COCO, you need download the ImageNet pretrained model to the `/path/to/YOLOS/` directory
+
+
 <details>
-<summary>To train the <code>YOLOS-Ti</code> model in the paper, run this command:</summary>
+<summary>To train the <code>dgcn-orign</code> model in the paper with <b>single-gpus</b>, run this command:</summary>
 <pre><code>
-python -m torch.distributed.launch \
-    --nproc_per_node=8 \
-    --use_env main.py \
-    --coco_path /path/to/coco
-    --batch_size 2 \
-    --lr 5e-5 \
-    --epochs 300 \
-    --backbone_name tiny \
-    --pre_trained /path/to/deit-tiny.pth\
-    --eval_size 512 \
-    --init_pe_size 800 1333 \
-    --output_dir /output/path/box_model
+
+python3.7 run_sample.py \
+    --voc12_data_dir /data/zhulianghui/data/VOC2012/VOCdevkit/VOC2012/ \
+    --batch_size=8 \
+    --train_dgcn_pass=True \
+    --make_pred_pass=False \
+    --eval_pred_pass=False \
+    --name=dgcn \
+    --random_seed=504 
+
 </code></pre>
+
+</details>
+
+
+<details>
+<summary>To train the <code>dgcn-orign</code> model in the paper with <b>multi-gpus</b>, run this command:</summary>
+<pre><code>
+
+python3.7  -m torch.distributed.launch \
+    --nproc_per_node=2 \
+    run_sample.py \
+    --voc12_data_dir /data/zhulianghui/data/VOC2012/VOCdevkit/VOC2012/ \
+    --batch_size=8 \
+    --train_dgcn_pass=True \
+    --make_pred_pass=False \
+    --eval_pred_pass=False \
+    --name=dgcn \
+    --random_seed=504 
+
+</code></pre>
+
 </details>
 
 <details>
-<summary>To train the <code>YOLOS-S</code> model with 200 epoch pretrained Deit-S in the paper, run this command:</summary>
+<summary>To train the <code>dgcn-wider-resnet</code> model in the paper, run this command:</summary>
 <pre><code>
 
-python -m torch.distributed.launch \
-    --nproc_per_node=8 \
-    --use_env main.py \
-    --coco_path /path/to/coco
-    --batch_size 1 \
-    --lr 2.5e-5 \
-    --epochs 150 \
-    --backbone_name small \
-    --pre_trained /path/to/deit-small-200epoch.pth\
-    --eval_size 800 \
-    --init_pe_size 512 864 \
-    --mid_pe_size 512 864 \
-    --output_dir /output/path/box_model
+python3.7  -m torch.distributed.launch \
+    --nproc_per_node=2 \
+    run_sample.py \
+    --voc12_data_dir /data/zhulianghui/data/VOC2012/VOCdevkit/VOC2012/ \
+    --batch_size=8 \
+    --train_dgcn_pass=True \
+    --make_pred_pass=False \
+    --eval_pred_pass=False \
+    --name=dgcn \
+    --random_seed=504 
 
 </code></pre>
+
 </details>
 
 <details>
-<summary>To train the <code>YOLOS-S</code> model with 300 epoch pretrained Deit-S in the paper, run this command:</summary>
+<summary>To train the <code>dgcn-hrnet</code> model in the paper, run this command:</summary>
 <pre><code>
-python -m torch.distributed.launch \
-    --nproc_per_node=8 \
-    --use_env main.py \
-    --coco_path /path/to/coco
-    --batch_size 1 \
-    --lr 2.5e-5 \
-    --epochs 150 \
-    --backbone_name small \
-    --pre_trained /path/to/deit-small-300epoch.pth\
-    --eval_size 800 \
-    --init_pe_size 512 864 \
-    --mid_pe_size 512 864 \
-    --output_dir /output/path/box_model
+
+python3.7  -m torch.distributed.launch \
+    --nproc_per_node=2 \
+    run_sample.py \
+    --voc12_data_dir /data/zhulianghui/data/VOC2012/VOCdevkit/VOC2012/ \
+    --batch_size=8 \
+    --train_dgcn_pass=True \
+    --make_pred_pass=False \
+    --eval_pred_pass=False \
+    --name=dgcn \
+    --random_seed=504 
 
 </code></pre>
+
 </details>
 
-<details>
-<summary>To train the <code>YOLOS-S (dWr)</code> model in the paper, run this command:</summary>
-<pre><code>
-python -m torch.distributed.launch \
-    --nproc_per_node=8 \
-    --use_env main.py \
-    --coco_path /path/to/coco
-    --batch_size 1 \
-    --lr 2.5e-5 \
-    --epochs 150 \
-    --backbone_name small_dWr \
-    --pre_trained /path/to/deit-small-dWr-scale.pth\
-    --eval_size 800 \
-    --init_pe_size 512 864 \
-    --mid_pe_size 512 864 \
-    --output_dir /output/path/box_model
-</code></pre>
-</details>
+### Make Prediction
 
-<details>
-<summary>To train the <code>YOLOS-B</code> model in the paper, run this command:</summary>
-<pre><code>
-python -m torch.distributed.launch \
-    --nproc_per_node=8 \
-    --use_env main.py \
-    --coco_path /path/to/coco
-    --batch_size 1 \
-    --lr 2.5e-5 \
-    --epochs 150 \
-    --backbone_name base \
-    --pre_trained /path/to/deit-base.pth\
-    --eval_size 800 \
-    --init_pe_size 800 1344 \
-    --mid_pe_size 800 1344 \
-    --output_dir /output/path/box_model
-</code></pre>
-</details>
+To make the prediction of the trained model, run:
 
+```make_pred
+python3.7 run_sample.py --voc12_data_dir /data/zhulianghui/data/VOC2012/VOCdevkit/VOC2012/ --train_dgcn_pass=False --make_pred_pass=True --eval_pred_pass=False --name=dgcn --random_seed=504 
+```
+
+If you got the error hint:`RuntimeError: unable to open shared memory object </torch_34514_2312401400> in read-write mode`, you may try to set this in terminal before evaluation.
+```
+ulimit -SHn 51200
+```
 
 ### Evaluation
 
-To evaluate `YOLOS-Ti` model on COCO, run:
+To evaluate prediction on last step, run:
 
 ```eval
-python main.py --coco_path /path/to/coco --batch_size 2 --backbone_name tiny --eval --eval_size 512 --init_pe_size 800 1333 --resume /path/to/YOLOS-Ti
-```
-To evaluate `YOLOS-S` model on COCO, run:
-```eval
-python main.py --coco_path /path/to/coco --batch_size 1 --backbone_name small --eval --eval_size 800 --init_pe_size 512 864 --mid_pe_size 512 864 --resume /path/to/YOLOS-S
-```
-To evaluate `YOLOS-S (dWr)` model on COCO, run:
-```eval
-python main.py --coco_path /path/to/coco --batch_size 1 --backbone_name small_dWr --eval --eval_size 800 --init_pe_size 512 864 --mid_pe_size 512 864 --resume /path/to/YOLOS-S(dWr)
+python3.7 run_sample.py --voc12_data_dir /data/zhulianghui/data/VOC2012/VOCdevkit/VOC2012/ --train_dgcn_pass=False --make_pred_pass=False --eval_pred_pass=True --name=dgcn --random_seed=504 
 ```
 
-To evaluate `YOLOS-B` model on COCO, run:
-```eval
-python main.py --coco_path /path/to/coco --batch_size 1 --backbone_name small --eval --eval_size 800 --init_pe_size 800 1344 --mid_pe_size 800 1344 --resume /path/to/YOLOS-B
-```
 
 ### Visualization
 
-* **Visualize box prediction and object categories distribution:**
+* **Visualize the comparation of different stages of dgcn:**
 
+![train result](./docs/train_result.png)
 
-1. To Get visualization in the paper, you need the finetuned YOLOS models on COCO, run following command to get 100 Det-Toks prediction on COCO val split, then it will generate `/path/to/YOLOS/visualization/modelname-eval-800-eval-pred.json`
-```
-python cocoval_predjson_generation.py --coco_path /path/to/coco --batch_size 1 --backbone_name small --eval --eval_size 800 --init_pe_size 512 864 --mid_pe_size 512 864 --resume /path/to/yolos-s-model.pth --output_dir ./visualization
-```
-2. To get all ground truth object categories on all images from COCO val split, run following command to generate `/path/to/YOLOS/visualization/coco-valsplit-cls-dist.json`
-```
-python cocoval_gtclsjson_generation.py --coco_path /path/to/coco --batch_size 1 --output_dir ./visualization
-```
-3. To visualize the distribution of Det-Toks' bboxs and categories, run following command to generate `.png` files in `/path/to/YOLOS/visualization/`
-```
- python visualize_dettoken_dist.py --visjson /path/to/YOLOS/visualization/modelname-eval-800-eval-pred.json --cococlsjson /path/to/YOLOS/visualization/coco-valsplit-cls-dist.json
-```
-![cls](visualization/yolos_s_300_pre.pth-eval-800eval-pred-bbox.png)
-![cls](./visualization/yolos_s_300_pre.pth-eval-800eval-pred-all-tokens-cls.png)
+- We could also say `Railroad is not a Train`.
 
+![boat result](./docs/boat_result.png)
 
-* **Use [VisualizeAttention.ipynb](VisualizeAttention.ipynb) to visualize self-attention of `[Det]` tokens on different heads of the last layer:**
+* **Some GIF result presentation:**
 
-![Det-Tok-41](visualization/exp/Det-Tok-41/Det-Tok-41_attn.png)
-![Det-Tok-96](visualization/exp/Det-Tok-96/Det-Tok-96_attn.png)
+![gif result](./docs/result_gif.gif))
+
 
 ## Acknowledgement :heart:
-This project is based on DETR ([paper](https://arxiv.org/abs/2005.12872), [code](https://github.com/facebookresearch/detr)), DeiT ([paper](https://arxiv.org/abs/2012.12877), [code](https://github.com/facebookresearch/deit)), DINO ([paper](https://arxiv.org/abs/2104.14294), [code](https://github.com/facebookresearch/dino)) and [timm](https://github.com/rwightman/pytorch-image-models). Thanks for their wonderful works.
+This project is based on [DGCN_OFFICIAL](https://github.com/hustvl/DGCN) and DSRG ([paper](https://openaccess.thecvf.com/content_cvpr_2018/papers/Huang_Weakly-Supervised_Semantic_Segmentation_CVPR_2018_paper.pdf), [code](https://github.com/speedinghzl/DSRG)). Thanks for their wonderful works.
 
 
 
@@ -284,10 +268,14 @@ This project is based on DETR ([paper](https://arxiv.org/abs/2005.12872), [code]
 If you find our paper and code useful in your research, please consider giving a star :star: and citation :pencil: :
 
 ```BibTeX
-@article{YOLOS,
-  title={You Only Look at One Sequence: Rethinking Transformer in Vision through Object Detection},
-  author={Fang, Yuxin and Liao, Bencheng and Wang, Xinggang and Fang, Jiemin and Qi, Jiyang and Wu, Rui and Niu, Jianwei and Liu, Wenyu},
-  journal={arXiv preprint arXiv:2106.00666},
-  year={2021}
+@article{article,
+  author = {Feng, Jiapei and Wang, Xinggang and Liu, Wenyu},
+  year = {2021},
+  month = {03},
+  pages = {},
+  title = {Deep graph cut network for weakly-supervised semantic segmentation},
+  volume = {64},
+  journal = {Science China Information Sciences},
+  doi = {10.1007/s11432-020-3065-4}
 }
 ```
