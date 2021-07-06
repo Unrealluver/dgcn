@@ -125,6 +125,7 @@ Download and PASCAL VOC 2012 dataset and DUTS dataset.
 
 * Download [DUTS TRAIN](http://saliencydetection.net/duts/download/DUTS-TR.zip) and [DUTS_TEST](http://saliencydetection.net/duts/download/DUTS-TE.zip)
 
+
 You could refer the directory structure to be the following:
 
 ~~~
@@ -142,6 +143,12 @@ DUTS/
         --- DUTS-TR-Image
         --- DUTS-TR-Mask
  ~~~
+
+
+* Download the **cues** of VOC2012 in [BaiduNetDisk](https://pan.baidu.com/s/1hlY26Ci9GZsVGrYVGTFELg), its password is `whrw`. We suggest you put it in the `datainfo` folder.
+
+* If you want to use `HRNet` as the backbone, you would better download its pretrained model in [BaiduNetDisk](https://pan.baidu.com/s/1-loIVA5cYWm6k2UyhWcCPw), its password is `2fbm`. We suggest you put it in the `pretrained` folder.
+
 
 ### Training
 
