@@ -121,3 +121,17 @@ def gap2d(x, keepdims=False):
         out = out.view(out.size(0), out.size(1), 1, 1)
 
     return out
+
+
+def load_state_no_module(path, map_location=torch.device('cpu')):
+    state_dict = torch.load(path, map_location=map_location)
+    # create new OrderedDict that does not contain `module.`
+    from collections import OrderedDict
+    new_state_dict = OrderedDict()
+    for k, v in state_dict.items():
+        if k[:7] != "module.":
+            name = k
+        else:
+            name = k[7:]  # remove `module.`
+        new_state_dict[name] = v
+    return new_state_dict

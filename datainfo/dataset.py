@@ -1,6 +1,6 @@
 import os
 from torchvision import transforms
-from randaugment import *
+from tool.randaugment import *
 import os.path as osp
 import sys
 import numpy as np
@@ -12,7 +12,7 @@ from scipy.ndimage import zoom
 import cv2
 from torch.utils import data
 from tool.cues_reader import CuesReader
-import imutils
+from tool import imutils
 import imageio
 
 

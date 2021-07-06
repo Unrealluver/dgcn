@@ -1,4 +1,3 @@
-import numpy as np
 import os
 from tool import torchutils
 import cv2
@@ -48,7 +47,7 @@ def run(args):
         args.evaluation_result_4_this_epoch = args.evaluation_out_dir_4_this_epoch + ".txt"
         miou = eval(args)
         miou_list.append(miou)
-        print("Epoch_" + str(i + 1) + "processed")
+        print("Epoch_" + str(i + 1) + " processed")
 
     for i in range(len(miou_list)):
-        print('Epoch_' + str(i + 1) + ': ' + miou_list[i])
+        print('Epoch_' + str(i + 1) + ' miou: ' + miou_list[i])

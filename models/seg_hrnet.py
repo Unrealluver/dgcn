@@ -19,6 +19,9 @@ import torch.nn as nn
 import torch._utils
 import torch.nn.functional as F
 
+import warnings
+warnings.filterwarnings("ignore")
+
 BatchNorm2d = nn.BatchNorm2d
 BN_MOMENTUM = 0.01
 logger = logging.getLogger(__name__)

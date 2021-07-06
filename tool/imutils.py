@@ -1,4 +1,4 @@
-import PIL.Image
+from PIL import Image
 import random
 import numpy as np
 
@@ -29,6 +29,36 @@ class RandomResizeLong():
         img = img.resize(target_shape, resample=PIL.Image.CUBIC)
 
         return img
+
+
+def pil_resize(img, size, order):
+    if size[0] == img.shape[0] and size[1] == img.shape[1]:
+        return img
+
+    if order == 3:
+        resample = Image.BICUBIC
+    elif order == 0:
+        resample = Image.NEAREST
+
+    return np.asarray(Image.fromarray(img).resize(size[::-1], resample))
+
+
+def pil_rescale(img, scale, order):
+    height, width = img.shape[:2]
+    target_size = (int(np.round(height*scale)), int(np.round(width*scale)))
+    return pil_resize(img, target_size, order)
+
+
+def random_resize_long(img, min_long, max_long):
+    target_long = random.randint(min_long, max_long)
+    h, w = img.shape[:2]
+
+    if w < h:
+        scale = target_long / h
+    else:
+        scale = target_long / w
+
+    return pil_rescale(img, scale, 3)
 
 
 class RandomCrop():

@@ -3,7 +3,6 @@ import os
 
 from tool import pyutils
 from tool.torchutils import how_many_gpus
-import datetime
 
 
 def str2bool(v):
@@ -38,7 +37,7 @@ if __name__ == "__main__":
     # training params
     parser.add_argument("--batch_size", type=int, default=12,
                         help="Number of images sent to the network in one step.")
-    parser.add_argument("--epoch", type=int, default=20,
+    parser.add_argument("--epoch", type=int, default=1,
                         help="Training epoch.")
     parser.add_argument("--learning_rate", type=float, default=75e-5,
                         help="Base learning rate for training with polynomial decay.")
@@ -89,7 +88,7 @@ if __name__ == "__main__":
 
     # Step
     parser.add_argument("--train_dgcn_pass", default=False, type=str2bool)
-    parser.add_argument("--make_pred_pass", default=False, type=str2bool)
+    parser.add_argument("--make_pred_pass", default=True, type=str2bool)
     parser.add_argument("--eval_pred_pass", default=True, type=str2bool)
 
     args = parser.parse_args()
@@ -97,8 +96,6 @@ if __name__ == "__main__":
     args.gpu_nums = how_many_gpus()
 
     # path about
-    date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    args.name = args.name + ' ' + date
     os.makedirs("results", exist_ok=True)
     os.makedirs(args.snapshot_out_dir, exist_ok=True)
     os.makedirs(args.snapshot_out_dir + args.name, exist_ok=True)

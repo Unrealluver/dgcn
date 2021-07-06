@@ -4,7 +4,7 @@ from torch.autograd import Variable
 import os.path as osp
 from config import config
 from config import update_config
-from dataset import VOCDataSet
+from datainfo.dataset import VOCDataSet
 from tool import *
 from tool.dist_ops import synchronize
 from tool import torchutils,imutils,dgcnutils,pyutils
@@ -32,11 +32,12 @@ def run(args):
     # dataset
     train_dataset = VOCDataSet(args.voc12_data_dir, args.voc12_data_list, max_iters=args.num_steps,
                                crop_size=(map(int, args.input_size.split(','))),
-                               scale=True, mirror=True, mean=imutils.VOC12_MEAN_RGB, cues_dir=args.voc12_cues_dir,
+                               scale=True, mirror=True, mean_rgb=imutils.VOC12_MEAN_RGB, cues_dir=args.voc12_cues_dir,
                                cues_name=args.voc12_cues_name)
     torch.cuda.set_device(args.local_rank)
     if args.gpu_nums > 1:
-        torch.distributed.init_process_group(backend="nccl", init_method="env://")
+        # torch.distributed.init_process_group(backend="nccl", init_method="env://")
+        torch.distributed.init_process_group(backend="nccl", init_method='tcp://localhost:23456', rank=args.local_rank, world_size=args.gpu_nums)
         synchronize()
         world_size = torch.distributed.get_world_size()
         args.batch_size_n = int(args.batch_size / world_size)
@@ -65,7 +66,8 @@ def run(args):
     min_prob = torch.tensor(0.0000001, device='cuda')
     for ep in range(args.epoch):
 
-        print('Epoch %d/%d' % (ep + 1, args.epoch))
+        if args.local_rank==0:
+            print('Epoch %d/%d' % (ep + 1, args.epoch))
 
         if (args.restore_epoch is not None) and (ep < args.restore_epoch):
             continue
@@ -105,7 +107,7 @@ def run(args):
             loss.backward()
             optimizer.step(ep)
 
-            if (optimizer.global_step-1)%100 == 0:
+            if (optimizer.global_step-1)%100 == 0 and args.local_rank == 0:
                 max_step = args.num_steps / args.batch_size * args.epoch + 1
                 timer.update_progress(optimizer.global_step / max_step)
 
