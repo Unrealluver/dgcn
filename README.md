@@ -147,6 +147,8 @@ DUTS/
 
 * Download the **cues** of VOC2012 in [BaiduNetDisk](https://pan.baidu.com/s/1hlY26Ci9GZsVGrYVGTFELg), its password is `whrw`. We suggest you put it in the `datainfo` folder.
 
+* We use [CAM](http://cnnlocalization.csail.mit.edu) for localizing the foreground seed classes and utilize the saliency detection technology DRFI for localizing background seed. You may refer the python interface to DRFI [here](https://github.com/speedinghzl/drfi_cpp) for convenience if you want to generate the seed by yourself.
+
 * If you want to use `HRNet` as the backbone, you would better download its pretrained model in [BaiduNetDisk](https://pan.baidu.com/s/1-loIVA5cYWm6k2UyhWcCPw), its password is `2fbm`. We suggest you put it in the `pretrained` folder.
 
 
